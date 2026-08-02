@@ -78,7 +78,9 @@ def apply_main(
     runtime_dir: Path | None = None,
     stdin_text: str | None = None,
 ) -> int:
-    args = build_apply_parser().parse_args(list(argv) if argv is not None else None)
+    parser = build_apply_parser()
+    argument_list = list(argv) if argv is not None else None
+    args = parser.parse_intermixed_args(argument_list)
     state = store or Store()
 
     try:
