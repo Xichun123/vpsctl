@@ -1257,7 +1257,8 @@ class ParamikoClient:
 
             # 如果有错误输出，也返回
             for line in stderr:
-                yield f"[STDERR] {line.rstrip('\\n')}"
+                stripped_line = line.rstrip('\n')
+                yield f"[STDERR] {stripped_line}"
 
         except Exception as e:
             yield f"[ERROR] Execution error: {str(e)}"

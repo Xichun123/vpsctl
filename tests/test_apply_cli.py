@@ -56,6 +56,22 @@ class ApplyCLITests(unittest.TestCase):
         self.assertEqual(invoked[2], "dm")
         self.assertIn(command, invoked)
 
+    def test_apply_parser_accepts_command_after_options(self):
+        args = apply_cli.build_apply_parser().parse_intermixed_args(
+            [
+                "app",
+                "--summary",
+                "Deploy release",
+                "--kind",
+                "deploy",
+                "docker compose up -d",
+            ]
+        )
+
+        self.assertEqual(args.project, "app")
+        self.assertEqual(args.command, "docker compose up -d")
+        self.assertEqual(args.kind, "deploy")
+
     def test_failed_apply_is_also_recorded(self):
         runtime_result = {
             "success": False,
