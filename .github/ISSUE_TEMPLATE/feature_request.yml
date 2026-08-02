@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a focused improvement to vpsctl or its Agent Skill
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operational problem or workflow limitation should be addressed?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the commands, output, or Agent behavior you expect.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: security
+    attributes:
+      label: Security and compatibility impact
+      description: Note effects on SSH configuration, credentials, remote state, or supported platforms.

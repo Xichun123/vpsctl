@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vpsctl"
+dynamic = ["version"]
+description = "Unified SSH and VPS operations CLI for AI agents"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+  { name = "Xichun123" },
+]
+keywords = [
+  "agent-skills",
+  "ai-agents",
+  "deployment",
+  "devops",
+  "ssh",
+  "vps",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Systems Administration",
+]
+dependencies = [
+  "paramiko>=2.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/Xichun123/vpsctl"
+Documentation = "https://github.com/Xichun123/vpsctl#readme"
+Issues = "https://github.com/Xichun123/vpsctl/issues"
+Source = "https://github.com/Xichun123/vpsctl"
+
+[project.scripts]
+vpsctl = "vpsctl.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "vpsctl.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"vpsctl._runtime" = ["*.sh"]
