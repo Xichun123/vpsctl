@@ -477,7 +477,8 @@ class NativeSSHClient:
             # 如果有错误输出，也返回
             if process.stderr:
                 for line in process.stderr:
-                    yield f"[STDERR] {line.rstrip('\n')}"
+                    stripped_line = line.rstrip('\n')
+                    yield f"[STDERR] {stripped_line}"
 
         except subprocess.TimeoutExpired:
             if process:

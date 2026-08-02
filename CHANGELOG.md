@@ -18,6 +18,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - SSH, SCP, Paramiko, jump-host, daemon, and server-transfer connections now use persistent `known_hosts` verification with accept-new behavior.
 
+### Fixed
+
+- Python 3.9 compatibility for streamed stderr formatting and interleaved `vpsctl apply` arguments.
+
 ### Removed
 
 - Generated build and egg-info artifacts from the source tree.
