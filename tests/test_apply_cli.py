@@ -46,6 +46,7 @@ class ApplyCLITests(unittest.TestCase):
 
         result = json.loads(stdout.getvalue())
         self.assertEqual(code, 0)
+        self.assertNotIn("stderr", result)
         self.assertEqual(result["change"]["summary"], "部署新版本")
         self.assertEqual(
             result["change"]["payload_sha256"],
@@ -91,7 +92,9 @@ class ApplyCLITests(unittest.TestCase):
                 store=self.store,
             )
 
+        result = json.loads(stdout.getvalue())
         self.assertEqual(code, 1)
+        self.assertEqual(result["stderr"], "failed")
         changes = self.store.list_changes(project_name="app")
         self.assertEqual(len(changes), 1)
         self.assertFalse(changes[0]["success"])

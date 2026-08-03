@@ -39,6 +39,9 @@ import re
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_script_dir, 'lib'))
 
+from utils import omit_empty_stderr
+
+
 def _human_size(size_bytes):
     """将字节数转为人类可读格式"""
     if size_bytes >= 1024 * 1024 * 1024:
@@ -697,7 +700,7 @@ def main():
         )
 
         # 输出结果
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        print(json.dumps(omit_empty_stderr(result), ensure_ascii=False, indent=2))
         sys.exit(0 if result.get('success') else 1)
 
     except FileNotFoundError as e:

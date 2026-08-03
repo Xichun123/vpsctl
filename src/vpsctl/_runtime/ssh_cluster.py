@@ -30,6 +30,7 @@ import argparse
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib'))
 
 from cluster import SSHCluster
+from utils import omit_empty_stderr
 
 
 def main():
@@ -106,7 +107,7 @@ def main():
                 }
             }
 
-            print(json.dumps(output, ensure_ascii=True, indent=2))
+            print(json.dumps(omit_empty_stderr(output), ensure_ascii=True, indent=2))
             sys.exit(0 if all(r.success for r in results.values()) else 1)
 
     except Exception as e:

@@ -32,6 +32,8 @@ import shlex
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_script_dir, 'lib'))
 
+from utils import omit_empty_stderr
+
 
 def _send_message(sock, data):
     """发送带长度前缀的 JSON 消息"""
@@ -292,7 +294,7 @@ def main():
         if result is None:
             result = direct_execute(args.alias, command_spec, timeout)
 
-        print(json.dumps(result, ensure_ascii=True, indent=2))
+        print(json.dumps(omit_empty_stderr(result), ensure_ascii=True, indent=2))
         sys.exit(0 if result.get('success') else 1)
 
     except FileNotFoundError as e:

@@ -28,7 +28,7 @@ If it is missing, report that the Python package must be installed. Installing t
 
 - Use aliases from `~/.ssh/config`; discover unknown aliases with `vpsctl list` or `vpsctl find <query>`.
 - Prefer `vpsctl` for all remote SSH, SCP, and rsync work instead of invoking those tools directly.
-- Read JSON fields `success`, `exit_code`, `stdout`, and `stderr`; output alone does not prove success.
+- Use JSON `success` and `exit_code` to determine command status. Read `stdout` for command output and optional `stderr` when present; empty `stderr` is omitted.
 - Use `vpsctl exec` for simple read-only commands.
 - Use `vpsctl apply` for modifications to an existing profiled project so the change is recorded.
 - Respect every project's `protected_paths`; do not overwrite, delete, or recreate protected content without explicit approval.

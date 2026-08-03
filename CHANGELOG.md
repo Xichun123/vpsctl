@@ -16,6 +16,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- Command result JSON omits `stderr` when it has no content; non-empty warnings and errors remain unchanged.
 - SSH, SCP, Paramiko, jump-host, daemon, and server-transfer connections now use persistent `known_hosts` verification with accept-new behavior.
 
 ### Fixed

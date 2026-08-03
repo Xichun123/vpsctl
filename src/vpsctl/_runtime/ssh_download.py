@@ -31,6 +31,9 @@ import argparse
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_script_dir, 'lib'))
 
+from utils import omit_empty_stderr
+
+
 def progress_callback(progress):
     """进度回调：输出 JSON 进度到 stderr"""
     info = progress.to_dict()
@@ -76,12 +79,13 @@ def main():
             client = loader.from_alias(args.alias)
 
             result = client.download(remote_path, args.local_path, show_progress=not args.no_progress)
-            print(json.dumps({
+            output = {
                 'success': result.success,
                 'stdout': result.stdout,
                 'stderr': result.stderr,
                 'exit_code': result.exit_code
-            }, ensure_ascii=True, indent=2))
+            }
+            print(json.dumps(omit_empty_stderr(output), ensure_ascii=True, indent=2))
             sys.exit(0 if result.success else 1)
         else:
             # 使用 Paramiko SFTP（支持断点续传、递归下载等高级功能）
@@ -129,7 +133,7 @@ def main():
 
         # 输出结果
         output = result.to_dict()
-        print(json.dumps(output, ensure_ascii=True, indent=2))
+        print(json.dumps(omit_empty_stderr(output), ensure_ascii=True, indent=2))
         sys.exit(0 if result.success else 1)
 
     except FileNotFoundError as e:

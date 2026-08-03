@@ -167,4 +167,4 @@ vpsctl <command> --help
 vpsctl <group> <subcommand> --help
 ```
 
-Always inspect JSON `success`, `exit_code`, `stdout`, and `stderr`. If host-key verification reports a changed key, stop and verify the server fingerprint rather than removing the warning blindly.
+Always use JSON `success` and `exit_code` to determine command status. Read `stdout` for command output and `stderr` when present; empty `stderr` is omitted. If host-key verification reports a changed key, stop and verify the server fingerprint rather than removing the warning blindly.

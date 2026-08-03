@@ -10,6 +10,7 @@ import subprocess
 import sys
 from typing import Any, Sequence
 
+from ._runtime.lib.utils import omit_empty_stderr
 from .store import CHANGE_KINDS, Store, StoreError
 
 
@@ -18,7 +19,7 @@ _RUNTIME_DIR = Path(__file__).resolve().parent / "_runtime"
 
 def _print_json(data: dict[str, Any], *, error: bool = False) -> None:
     print(
-        json.dumps(data, ensure_ascii=False, indent=2),
+        json.dumps(omit_empty_stderr(data), ensure_ascii=False, indent=2),
         file=sys.stderr if error else sys.stdout,
     )
 

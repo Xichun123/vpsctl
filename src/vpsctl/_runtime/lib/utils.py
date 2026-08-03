@@ -6,7 +6,26 @@
 
 import os
 import subprocess
-from typing import Optional
+from typing import Any, Optional
+
+
+def omit_empty_stderr(value: Any) -> Any:
+    """Return JSON-compatible data without empty stderr fields."""
+    if isinstance(value, dict):
+        return {
+            key: omit_empty_stderr(item)
+            for key, item in value.items()
+            if not (
+                key == "stderr"
+                and (
+                    item is None
+                    or (isinstance(item, str) and not item.strip())
+                )
+            )
+        }
+    if isinstance(value, list):
+        return [omit_empty_stderr(item) for item in value]
+    return value
 
 
 def check_ssh_available() -> bool:
