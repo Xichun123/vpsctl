@@ -127,8 +127,9 @@ cat deploy.sh | vpsctl apply my-app --stdin \
 # 查询变更记录
 vpsctl change list --project my-app
 
-# 文件传输
+# 文件传输（上传默认不限制传输超时，可按需显式设置）
 vpsctl upload prod-web-01 ./dist /var/www/app --recursive
+vpsctl upload prod-web-01 ./release.tar.gz /tmp/release.tar.gz --timeout 1800
 vpsctl download prod-web-01 /var/log/app.log ./app.log --resume
 vpsctl transfer old-host /data new-host /data --mode hybrid
 

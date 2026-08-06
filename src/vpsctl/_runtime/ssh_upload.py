@@ -34,6 +34,13 @@ sys.path.insert(0, os.path.join(_script_dir, 'lib'))
 from utils import omit_empty_stderr
 
 
+def _positive_timeout(value):
+    timeout = int(value)
+    if timeout <= 0:
+        raise argparse.ArgumentTypeError('timeout must be greater than 0')
+    return timeout
+
+
 def progress_callback(progress):
     """进度回调：输出 JSON 进度到 stderr"""
     info = progress.to_dict()
@@ -55,6 +62,9 @@ def main():
                         help='Upload directory recursively')
     parser.add_argument('--no-progress', action='store_true',
                         help='Disable progress output')
+    parser.add_argument('--timeout', type=_positive_timeout, default=None,
+                        metavar='SECONDS',
+                        help='Set the transfer timeout; default is unlimited')
 
     args = parser.parse_args()
     remote_path = args.remote_path
@@ -91,7 +101,12 @@ def main():
                 }, ensure_ascii=True, indent=2), file=sys.stderr)
                 sys.exit(1)
 
-            result = client.upload(local_path, remote_path, show_progress=not args.no_progress)
+            result = client.upload(
+                local_path,
+                remote_path,
+                timeout=args.timeout,
+                show_progress=not args.no_progress,
+            )
             output = {
                 'success': result.success,
                 'stdout': result.stdout,
@@ -110,15 +125,15 @@ def main():
                 password=params.get('password'),
                 key_file=params.get('key_file'),
                 timeout=30,
-                transfer_timeout=None  # 大文件传输不设超时限制
+                transfer_timeout=args.timeout
             )
 
             # 获取 SSH 连接和 SFTP
             ssh_client = client._get_connection()
             sftp = ssh_client.open_sftp()
 
-            # 设置 SFTP 超时（大文件传输使用无限制）
-            sftp.get_channel().settimeout(None)
+            # 文件传输默认不限时；显式 timeout 时由 channel 按读写操作限制。
+            sftp.get_channel().settimeout(args.timeout)
 
             # 创建传输器
             from sftp_transfer import SFTPTransfer

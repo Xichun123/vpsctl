@@ -268,7 +268,7 @@ class NativeSSHClient:
         Args:
             local_path: 本地文件路径
             remote_path: 远程文件路径
-            timeout: 超时时间（秒），None 表示根据文件大小自动计算
+            timeout: 文件传输总超时时间（秒），None 表示不限时
             show_progress: 是否显示传输进度
 
         Returns:
@@ -284,21 +284,12 @@ class NativeSSHClient:
             )
 
         try:
-            # 根据文件大小自动计算超时时间
-            if timeout is None:
-                file_size_mb = os.path.getsize(local_path) / (1024 * 1024)
-                # 假设最低速度 1MB/s，加上 60 秒缓冲时间
-                calculated_timeout = int(file_size_mb / 1.0) + 60
-                # 最小 60 秒，最大 3600 秒（1小时）
-                actual_timeout = max(60, min(calculated_timeout, 3600))
-            else:
-                actual_timeout = timeout
-
             args = ["scp"]
 
             # 基本参数
             args.extend(["-P", str(self.port)])
             args.extend(openssh_accept_new_args())
+            args.extend(["-o", f"ConnectTimeout={self.timeout}"])
 
             # 密钥文件
             if self.key_file:
@@ -327,7 +318,7 @@ class NativeSSHClient:
                 text=True,
                 encoding='utf-8',
                 errors='replace',
-                timeout=actual_timeout
+                timeout=timeout
             )
 
             return SSHResult(
@@ -340,7 +331,11 @@ class NativeSSHClient:
             return SSHResult(
                 success=False,
                 stdout="",
-                stderr=f"Upload timeout after {timeout or self.timeout} seconds",
+                stderr=(
+                    f"Upload timeout after {timeout} seconds"
+                    if timeout is not None else
+                    "Upload timed out"
+                ),
                 exit_code=-1
             )
         except Exception as e:

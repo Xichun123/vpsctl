@@ -21,6 +21,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- Native uploads no longer abort slow transfers based on a guessed file-size timeout; `--timeout` now provides an explicit limit and reports the actual value.
 - Python 3.9 compatibility for streamed stderr formatting and interleaved `vpsctl apply` arguments.
 
 ### Removed

@@ -91,11 +91,14 @@ vpsctl change list --project <project> --limit 20
 ## File transfer
 
 ```bash
-vpsctl upload <alias> <local-path> <remote-path> [--resume] [--recursive]
+vpsctl upload <alias> <local-path> <remote-path> [--resume] [--recursive] \
+  [--timeout <seconds>]
 vpsctl download <alias> <remote-path> <local-path> [--resume] [--recursive]
 vpsctl transfer <source-alias> <source-path> <destination-alias> <destination-path> \
   [--mode auto|direct|stream|hybrid] [--use-rsync]
 ```
+
+Uploads keep the 30-second SSH connection timeout but do not set a transfer timeout by default. Use `--timeout <seconds>` only when the operation needs an explicit transfer limit.
 
 Transfer modes:
 
