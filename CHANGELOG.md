@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-09
+
 ### Added
 
 - Durable remote jobs with `exec --detach`, explicit job IDs, status reconciliation, and byte-cursor output with lossless base64 data.
@@ -48,5 +50,6 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Local project profiles, remote state snapshots, compact Agent context, and explicit refresh operations.
 - Recorded project mutations through `vpsctl apply` and supplemental change journal entries.
 
-[Unreleased]: https://github.com/Xichun123/vpsctl/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Xichun123/vpsctl/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Xichun123/vpsctl/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Xichun123/vpsctl/releases/tag/v0.3.0
