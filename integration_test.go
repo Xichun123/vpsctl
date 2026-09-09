@@ -33,7 +33,13 @@ func TestSSHIntegration(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	root := t.TempDir()
+	// StrictModes walks every parent of AuthorizedKeysFile. t.TempDir() is
+	// under /tmp (mode 1777), which OpenSSH rejects as world-writable.
+	root := filepath.Join("/root", "vpsctl-sshd-"+token())
+	if err = os.Mkdir(root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(root) })
 	home := filepath.Join(root, "remote")
 	if err = os.Mkdir(home, 0700); err != nil {
 		t.Fatal(err)
