@@ -36,7 +36,7 @@ When changing `skills/vpsctl/`, install the `skills` CLI and run:
 scripts/check-skill-package.sh
 ```
 
-This validates Skill discovery and isolated Universal/Pi installation; it does not install or release the CLI binary.
+This validates Skill discovery and isolated Universal installation; it does not install or release the CLI binary.
 
 Pushing an exact `vX.Y.Z` tag runs CI, including the isolated Linux OpenSSH integration test, then publishes checksum-verified GitHub Release binaries. The tag must not already have a release. Do not bundle Skills into that release.
 

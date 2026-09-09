@@ -41,17 +41,17 @@ go build -o dist/vpsctl .
 ./dist/vpsctl --version
 ```
 
-Skill 仍放在仓库的 `skills/vpsctl/`。使用 [`skills`](https://www.npmjs.com/package/skills) CLI 为 Universal 和 Pi 全局安装：
+Skill 仍放在仓库的 `skills/vpsctl/`。使用 [`skills`](https://www.npmjs.com/package/skills) CLI 全局安装：
 
 ```bash
-skills add Xichun123/vpsctl --skill vpsctl -g -a universal -a pi -y
+skills add Xichun123/vpsctl --skill vpsctl -g -a universal -y
 ```
 
 从本地仓库验证发现并安装：
 
 ```bash
 skills add . --list
-skills add . --skill vpsctl -g -a universal -a pi -y
+skills add . --skill vpsctl -g -a universal -y
 ```
 
 ## 快速开始
@@ -164,7 +164,7 @@ go build -o dist/vpsctl .
 scripts/check-skill-package.sh
 ```
 
-默认测试不访问真实 VPS。Skill 检查需要 `skills` CLI，验证发现和 Universal/Pi 隔离安装；不会安装 CLI 二进制。
+默认测试不访问真实 VPS。Skill 检查需要 `skills` CLI，验证发现和 Universal 隔离安装；不会安装 CLI 二进制。
 
 提交问题或 PR 前请阅读 [`CONTRIBUTING.md`](CONTRIBUTING.md)。安全问题请遵循 [`SECURITY.md`](SECURITY.md)，不要在公开 Issue 中提交凭据或真实基础设施信息。
 

@@ -28,28 +28,23 @@ HOME="$temp_home" skills add "$repo_root" \
   --skill vpsctl \
   --global \
   --agent universal \
-  --agent pi \
   --yes \
   --copy >/dev/null
 
-for install_root in \
-  "$temp_home/.agents/skills/vpsctl" \
-  "$temp_home/.pi/agent/skills/vpsctl"
-do
-  if [[ ! -f "$install_root/SKILL.md" ]]; then
-    printf 'error: missing installed SKILL.md at %s\n' "$install_root" >&2
+install_root="$temp_home/.agents/skills/vpsctl"
+if [[ ! -f "$install_root/SKILL.md" ]]; then
+  printf 'error: missing installed SKILL.md at %s\n' "$install_root" >&2
+  exit 1
+fi
+
+while IFS= read -r -d '' source_file; do
+  relative_path=${source_file#"$source_skill/"}
+  installed_file="$install_root/$relative_path"
+  if [[ ! -f "$installed_file" ]]; then
+    printf 'error: missing companion file %s\n' "$installed_file" >&2
     exit 1
   fi
-
-  while IFS= read -r -d '' source_file; do
-    relative_path=${source_file#"$source_skill/"}
-    installed_file="$install_root/$relative_path"
-    if [[ ! -f "$installed_file" ]]; then
-      printf 'error: missing companion file %s\n' "$installed_file" >&2
-      exit 1
-    fi
-    cmp "$source_file" "$installed_file"
-  done < <(find "$source_skill" -type f -print0)
-done
+  cmp "$source_file" "$installed_file"
+done < <(find "$source_skill" -type f -print0)
 
 printf 'vpsctl skill discovery and isolated installation passed\n'
