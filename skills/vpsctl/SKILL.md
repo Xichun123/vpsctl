@@ -1,106 +1,57 @@
 ---
 name: vpsctl
-description: Operate remote Linux VPS hosts through the vpsctl CLI, including SSH host inventory, project deployment profiles, commands, transfers, tunnels, jump hosts, keys, local context, snapshots, and recorded changes. Use for remote VPS administration or deployment tasks; do not use for localhost-only work.
+description: Operate remote Linux VPS hosts through the Agent-only JSON vpsctl CLI, including SSH host inventory, commands, durable jobs, file transfers, tunnels, jump hosts, and keys. Use for remote VPS administration or deployment tasks; do not use for localhost-only work.
 license: MIT
-compatibility: Requires the vpsctl CLI, Python 3.9+, an OpenSSH client, and SSH hosts configured in ~/.ssh/config. Remote operations require network access.
+compatibility: Requires vpsctl 0.4.0 on Linux or macOS, system OpenSSH, pre-provisioned verified known_hosts, and noninteractive key or ssh-agent authentication. Remote Linux needs POSIX sh and GNU coreutils; durable jobs also need procfs and util-linux setsid. Recursive or resumable transfers require rsync 3+ at both ends. Remote operations require network access.
 metadata:
   author: Xichun123
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # vpsctl
 
-Use the installed `vpsctl` command for remote SSH and VPS operations. Do not depend on this Skill's installation path and do not invoke package-internal Python files.
+Use the installed `vpsctl` command for remote SSH and VPS operations. Do not depend on this Skill's installation path or invoke package-internal source files.
 
-Read [references/commands.md](references/commands.md) when exact command syntax or less common operations are needed.
+Read [references/commands.md](references/commands.md) for exact syntax, JSON semantics, and operation limits.
 
 ## Preconditions
 
-Confirm the CLI is available before remote work:
+Run `vpsctl --version` and inspect its JSON `data.version`. This Skill targets the breaking 0.4.0 CLI. If unavailable, ask for the GitHub Release binary or a source build on `PATH`; installing this Skill does not install the CLI.
 
-```bash
-vpsctl --version
-```
-
-If it is missing, report that the Python package must be installed. Installing this Skill does not install the `vpsctl` executable.
+Before connecting, require the exact target alias, trusted SSH configuration, verified server fingerprints already provisioned in `known_hosts`, and an available key or unlocked `ssh-agent`. There are no password/passphrase prompts or automatic acceptance of host keys. Jump hosts require the same preparation.
 
 ## Mandatory policy
 
-- Use aliases from `~/.ssh/config`; discover unknown aliases with `vpsctl list` or `vpsctl find <query>`.
-- Prefer `vpsctl` for all remote SSH, SCP, and rsync work instead of invoking those tools directly.
-- Use JSON `success` and `exit_code` to determine command status. Read `stdout` for command output and optional `stderr` when present; empty `stderr` is omitted.
-- Use `vpsctl exec` for simple read-only commands.
-- Use `vpsctl apply` for modifications to an existing profiled project so the change is recorded.
-- Respect every project's `protected_paths`; do not overwrite, delete, or recreate protected content without explicit approval.
-- Treat profile deploy, restart, and log commands as documentation, not standing authorization.
-- Confirm the target and impact before production changes, deletion, authentication migration, or key writes.
-- Combine independent read-only queries for one host into a single `exec` where practical.
-- Use `--stdin` or `--script-file` for commands containing `$()`, backticks, `${VAR}`, heredocs, nested quoting, secrets, certificates, JSON/YAML, or long scripts.
-- After a change, perform the smallest relevant read-only verification; do not refresh unrelated projects.
-- Record uploads, migrations, and changes outside `apply` with `vpsctl change add`.
-- Update the static project profile when paths, services, Compose files, domains, or operational commands change.
+- Discover aliases with `vpsctl host list` or `vpsctl host find <query>`. Inventory is syntactic, not proof of connectivity or identity.
+- Prefer `vpsctl` for remote commands and transfers. Use `exec` for both read-only commands and authorized writes; no project registration is required.
+- Confirm targets, remote absolute paths, and impact before production changes, deletion, overwrites, or key writes. Batch commands require an explicit host list.
+- Protect `.env`, private keys, certificates, and production configuration; do not overwrite, delete, or recreate sensitive paths without explicit approval.
+- Never expose tokens, passwords, or private keys in commands, scripts, logs, or reports. Detached jobs persist scripts and logs. Base64 and file permissions are not secret storage.
+- Stop on host-key rejection; independently verify and provision the correct fingerprint. Never bypass verification or blindly trust `ssh-keyscan` output.
+- Treat SSH configuration as trusted executable input: directives such as `ProxyCommand` and `Match exec` may run local code. Do not load untrusted configs.
+- Read JSON `status`, `exit_code`, `error`, and `truncated`, not the removed `success` field. `completed` alone is not success; require `exit_code == 0` and `error == null`. `running` acknowledges a job launch only.
+- A timeout, cancellation, or SSH disconnect may leave remote work running. On `unknown`, reconcile state or the returned job ID before any further mutation; never blindly retry.
+- Combine independent read-only checks for one host when practical. Use `--stdin` or `--script-file` for complex quoting, heredocs, JSON/YAML, or long scripts. Scripts use POSIX `sh`; invoke another interpreter explicitly when needed.
+- Put global `--timeout`, `--ssh-config`, and `--max-output` options before the command. A timeout limits local waiting, not remote execution.
+- Use the smallest relevant read-only verification after a change. Failed commands can make partial changes; never claim success without validation.
 
-## Project workflow
+## Workflow
 
-For an existing project:
-
-1. Run `vpsctl project list` or `vpsctl project show <name>`.
-2. Run `vpsctl context --project <name>` without `--refresh` for routine work.
-3. Inspect `protected_paths`, `recent_changes`, `changes_since_baseline`, and `warnings`.
-4. Execute read-only work with `exec` and modifications with `apply`.
-5. Verify the changed behavior with a focused read-only command.
-6. Update static profile fields and add supplemental change records when required.
-
-Context is local by default. Use explicit refresh only for first baselines, missing caches, suspected external drift, troubleshooting, or a user request for current remote state.
-
-Interpret context status precisely:
-
-- `tracked`: initial baseline plus the vpsctl change journal, not a fresh remote check.
-- `fresh`: an explicitly age-bounded snapshot is still within its requested maximum age.
-- `stale`: an explicitly age-bounded snapshot is older than requested.
-- `missing`: no successful baseline exists.
-- `refresh_failed`: the latest refresh failed while the last successful snapshot remains available.
-
-Clearly report `missing` and `refresh_failed` states.
-
-## New project rule
-
-Any task that deploys, migrates, or creates a project on a VPS must end with a vpsctl project profile. Deployment and profile creation may happen in either order.
-
-Create a minimum profile as soon as practical:
+1. Discover and confirm the host, remote paths, authentication, and verified host keys.
+2. Inspect only the relevant state with `exec`.
+3. Confirm the modification scope and sensitive-path impact.
+4. Run the authorized command. Use `--cwd` for its remote working directory and `--detach` for durable long work.
+5. For detached work, retain `data.job_id` even after an uncertain launch. Query `job status` and page `job output` using `data.next_cursor` until reconciled; do not submit a duplicate job.
+6. Verify the changed behavior and report failures, unknown outcomes, or output truncation explicitly.
 
 ```bash
-vpsctl project add <name> --host <alias> --path <absolute-remote-path>
-vpsctl project show <name>
+vpsctl exec <alias> '<read-only-command>'
+vpsctl exec <alias> --cwd /opt/my-app '<authorized-write-command>'
+vpsctl exec <alias> --cwd /opt/my-app --detach --script-file ./deploy.sh
+vpsctl job status <alias> <job-id>
+vpsctl job output <alias> <job-id> --cursor 0 --limit 65536
 ```
 
-Before declaring the task complete, `vpsctl project show <name>` must succeed. If deployment happened before profiling, add the initial deployment record:
+Job output cursors count bytes, not characters. Decode `data.output_base64` for lossless logs and advance with `data.next_cursor`; `stdout` is a display-only UTF-8 conversion. Logs are uncapped and not rotated; arrange authorized cleanup when no longer needed. Output exhaustion is not task completion.
 
-```bash
-vpsctl change add <name> --kind deploy --summary "Initial deployment of <name>"
-```
-
-Do not skip profiling because runtime, service, domain, or command details are incomplete. Add those fields later with `vpsctl project update`.
-
-## Host-only workflow
-
-For work that is genuinely about a host rather than a deployed project:
-
-```bash
-vpsctl context --host <alias>
-vpsctl exec <alias> "<read-only-command>"
-```
-
-Do not refresh an entire host merely to update one known project.
-
-## Mutation and verification
-
-Use recorded mutations for existing projects:
-
-```bash
-vpsctl apply <project> --kind <kind> --summary "<summary>" "<command>"
-```
-
-`apply` records successful and failed attempts because a failed command may have partially changed the remote system. It stores the summary, type, time, result, and payload SHA-256, but not the command body.
-
-After modification, run a targeted check such as service status, container status, a health endpoint, or a specific file metadata query. Do not claim success when validation fails or was not run.
+Single-file transfers default to no replacement and use checksums plus atomic commit. Explicit `--overwrite` requires approval. Recursive/resume uses rsync 3+ at both ends, skips existing files unless overwriting, and is not a directory-wide transaction. Temporary files use `0600`; uploaded files are not automatically executable.

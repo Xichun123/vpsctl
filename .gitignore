@@ -1,25 +1,8 @@
-# Python bytecode and caches
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# Packaging output
-*.egg-info/
-build/
-dist/
-*.whl
-
-# Virtual environments
-.venv/
-venv/
-
-# Coverage
-.coverage
-.coverage.*
-coverage.xml
-htmlcov/
+# Go build and test output
+/dist/
+/vpsctl
+*.test
+coverage.out
 
 # Local environment and editor files
 .env
@@ -29,6 +12,11 @@ htmlcov/
 .idea/
 .vscode/
 
-# Local vpsctl state
+# Historical Python caches left by previous local installations
+__pycache__/
+*.egg-info/
+.venv/
+
+# Historical local state (never commit user data)
 *.sqlite
 *.sqlite3

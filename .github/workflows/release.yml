@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: GitHub Release
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Build release assets
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || {
+            printf 'error: refusing non-release tag %s\n' "$TAG" >&2
+            exit 1
+          }
+          version=${TAG#v}
+          out="$GITHUB_WORKSPACE/release-assets"
+          mkdir -p -- "$out"
+          ldflags="-s -w -X main.version=${version}"
+          for pair in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64; do
+            GOOS=${pair%/*} GOARCH=${pair#*/} CGO_ENABLED=0 \
+              go build -trimpath -ldflags "$ldflags" -o "$out/vpsctl_${pair%/*}_${pair#*/}" .
+          done
+          install -m 0755 scripts/install.sh "$out/install.sh"
+          (cd "$out" && sha256sum vpsctl_darwin_arm64 vpsctl_darwin_amd64 vpsctl_linux_arm64 vpsctl_linux_amd64 install.sh > checksums.txt)
+          printf 'OUT=%s\n' "$out" >> "$GITHUB_ENV"
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            printf 'error: release %s already exists\n' "$TAG" >&2
+            exit 1
+          fi
+          # Create as a draft, upload assets, then publish so a failed upload
+          # cannot become the latest incomplete release.
+          gh release create "$TAG" --draft --verify-tag --generate-notes \
+            "$OUT/vpsctl_darwin_arm64" \
+            "$OUT/vpsctl_darwin_amd64" \
+            "$OUT/vpsctl_linux_arm64" \
+            "$OUT/vpsctl_linux_amd64" \
+            "$OUT/install.sh" \
+            "$OUT/checksums.txt"
+          gh release edit "$TAG" --draft=false

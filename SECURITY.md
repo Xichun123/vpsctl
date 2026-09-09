@@ -6,7 +6,7 @@ Security fixes are applied to the latest released minor version.
 
 | Version | Supported |
 | --- | --- |
-| 0.3.x | Yes |
+| 0.4.x | Yes |
 | Earlier versions | No |
 
 ## Reporting a vulnerability
@@ -21,4 +21,4 @@ You should receive an acknowledgement within seven days. Maintainers will coordi
 
 ## Operational security
 
-`vpsctl` executes commands on remote systems and can modify SSH configuration, keys, files, services, and deployment state. Review commands before execution, use least-privilege accounts, protect `~/.ssh` and `~/.vpsctl`, and verify host-key change warnings rather than bypassing them.
+`vpsctl` executes commands on remote systems and can modify SSH configuration, keys, files, services, and deployment state. Review commands before execution, use least-privilege accounts, protect `~/.ssh`, and verify host-key change warnings rather than bypassing them.
