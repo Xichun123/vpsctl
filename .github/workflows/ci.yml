@@ -43,7 +43,7 @@ jobs:
           sudo env "PATH=$PATH:/usr/sbin" VPSCTL_INTEGRATION=1 go test -run '^TestSSHIntegration$' -v .
       - name: Build binary
         run: go build -o dist/vpsctl .
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: vpsctl-${{ runner.os }}-${{ runner.arch }}
           path: dist/vpsctl
